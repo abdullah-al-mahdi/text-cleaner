@@ -4,6 +4,9 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Text Cleaner</title>
+
+	<!-- |================================================| -->
+	<!-- |=======|| Style Start ||====================| -->
 	<style>
 		body {
 			font-family: Arial, sans-serif;
@@ -17,60 +20,6 @@
 			margin: auto;
 		}
 
-		textarea {
-			width: 100%;
-			height: 300px;
-			padding: 15px;
-			font-size: 15px;
-			border-radius: 6px;
-			border: none;
-			outline: none;
-			resize: vertical;
-		}
-
-		.buttons {
-			margin-top: 15px;
-			display: flex;
-			gap: 10px;
-			flex-wrap: wrap;
-		}
-
-		button {
-			padding: 12px 20px;
-			font-size: 15px;
-			border: none;
-			border-radius: 6px;
-			cursor: pointer;
-			font-weight: bold;
-		}
-
-		.btn-clean {
-			background: #22c55e;
-			color: #022c22;
-		}
-
-		.btn-clean:hover {
-			background: #16a34a;
-		}
-
-		.btn-clear {
-			background: #ef4444;
-			color: #ffffff;
-		}
-
-		.btn-clear:hover {
-			background: #dc2626;
-		}
-
-		.btn-paste {
-			background: #38bdf8;
-			color: #082f49;
-		}
-
-		.btn-paste:hover {
-			background: #0ea5e9;
-		}
-
 		h2 {
 			margin-bottom: 10px;
 			font-size: 50px;
@@ -81,6 +30,73 @@
 			font-size: 14px;
 		}
 
+		textarea {
+			width: 100%;
+			height: 300px;
+			padding: 15px;
+			font-size: 18px;
+			border-radius: 3px;
+			border: none;
+			outline: none;
+			resize: vertical;
+			margin-top: 15px;
+		}
+
+		.buttons {
+			margin-top: 15px;
+			display: flex;
+			gap: 15px;
+			flex-wrap: wrap;
+		}
+
+		button {
+			padding: 15px 30px;
+			font-size: 14px;
+			border: none;
+			border-radius: 3px;
+			cursor: pointer;
+			font-weight: bold;
+			transition: background 0.2s ease;
+		}
+
+		/* Primary actions */
+		.btn-paste {
+			background: #818000;
+			color: #ffffff;
+		}
+
+		.btn-paste:hover {
+			background: #A5A800;
+		}
+
+		.btn-clean {
+			background: #3D63B6;
+			color: #ffffff;
+		}
+
+		.btn-clean:hover {
+			background: #5181CB;
+		}
+
+		.btn-clear {
+			background: #D84D2E;
+			color: #ffffff;
+		}
+
+		.btn-clear:hover {
+			background: #DC5B33;
+		}
+
+		/* Text transform buttons */
+		.btn-transform {
+			background: #6F4857;
+			color: #e5e7eb;
+		}
+
+		.btn-transform:hover {
+			background: #946176;
+		}
+
 		.status {
 			margin-top: 10px;
 			font-size: 13px;
@@ -88,14 +104,25 @@
 			display: none;
 		}
 	</style>
+	<!-- |=======|| Style End ||====================| -->
+	<!-- |================================================| -->
 </head>
 
+
+
 <body>
+	<!-- |================================================| -->
+	<!-- |=======|| Main Content Start ||====================| -->
 	<div class="container">
 		<h2>Text Cleaner ✨</h2>
-		<p>Paste → Clean & Copy</p>
-		<br>
+		<p>Paste → Transform → Clean & Copy → Clear</p>
 		<textarea id="inputText" placeholder="Paste your text here..."></textarea>
+		<div class="buttons">
+			<button class="btn-transform" onclick="transformText('uppercase')">Uppercase</button>
+			<button class="btn-transform" onclick="transformText('lowercase')">Lowercase</button>
+			<button class="btn-transform" onclick="transformText('capitalize')">Capitalize</button>
+			<button class="btn-transform" onclick="transformText('none')">None</button>
+		</div>
 		<div class="buttons">
 			<button class="btn-paste" onclick="pasteText()">Paste Text</button>
 			<button class="btn-clean" onclick="cleanAndCopy()">Clean & Copy</button>
@@ -103,16 +130,65 @@
 		</div>
 		<div class="status" id="status">✔ Cleaned & Copied to clipboard</div>
 	</div>
+	<!-- |================================================| -->
+	<!-- |=======|| Main Content End ||====================| -->
 
+
+	<!-- |================================================| -->
+	<!-- |=======|| Script Start ||====================| -->
 	<script>
+		function transformText(type) {
+			const textarea = document.getElementById('inputText');
+			const html = textarea.value;
+			if (!html) return;
+
+			// Virtual DOM container
+			const temp = document.createElement('div');
+			temp.innerHTML = html;
+
+			// Walk only TEXT nodes
+			const walker = document.createTreeWalker(
+				temp,
+				NodeFilter.SHOW_TEXT,
+				null,
+				false
+			);
+
+			let node;
+			while ((node = walker.nextNode())) {
+				let text = node.nodeValue;
+
+				switch (type) {
+					case 'uppercase':
+						node.nodeValue = text.toUpperCase();
+						break;
+
+					case 'lowercase':
+						node.nodeValue = text.toLowerCase();
+						break;
+
+					case 'capitalize':
+						node.nodeValue = text
+							.toLowerCase()
+							.replace(/\b\w/g, char => char.toUpperCase());
+						break;
+
+					case 'none':
+						break;
+				}
+			}
+
+			textarea.value = temp.innerHTML;
+		}
+
 		function cleanAndCopy() {
 			const textarea = document.getElementById('inputText');
 			const status = document.getElementById('status');
 			let text = textarea.value;
-			text = text
-				.replace(/\s+/g, ' ')
-				.trim();
+
+			text = text.replace(/\s+/g, ' ').trim();
 			textarea.value = text;
+
 			navigator.clipboard.writeText(text).then(() => {
 				status.style.display = 'block';
 				setTimeout(() => {
@@ -120,21 +196,21 @@
 				}, 2000);
 			});
 		}
+
 		function clearText() {
-			const textarea = document.getElementById('inputText');
-			const status = document.getElementById('status');
-			textarea.value = '';
-			status.style.display = 'none';
+			document.getElementById('inputText').value = '';
+			document.getElementById('status').style.display = 'none';
 		}
+
 		function pasteText() {
-			const textarea = document.getElementById('inputText');
-			const status = document.getElementById('status');
 			navigator.clipboard.readText().then(text => {
-				textarea.value = text;
-				status.style.display = 'none';
+				document.getElementById('inputText').value = text;
+				document.getElementById('status').style.display = 'none';
 			});
 		}
 	</script>
+	<!-- |================================================| -->
+	<!-- |=======|| Script End ||====================| -->
 </body>
 
 </html>
